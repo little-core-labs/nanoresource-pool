@@ -110,7 +110,7 @@ provide the `allowActive` value, `pool.allowActive` will be used by
 default.
 
 <a name="pool-query"></a>
-#### `pool.query([where[, opts[, callback]])
+#### `pool.query([where[, opts[, callback]])`
 
 Query for resources added to the pool. This function will also query any
 added child pools on the instance.
