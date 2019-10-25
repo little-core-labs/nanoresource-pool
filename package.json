@@ -1,6 +1,6 @@
 {
   "name": "nanoresource-pool",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Manage a pool of nanoresource instances",
   "main": "index.js",
   "scripts": {
