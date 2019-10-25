@@ -46,7 +46,7 @@ class Pool {
     this[kResources] = new Set()
     this.allowActive = opts.allowActive || false
 
-    this.open()
+    process.nextTick(() => this.open())
   }
 
   /**
@@ -110,7 +110,11 @@ class Pool {
     }
 
     where = Object.assign({}, where) // copy
-    return this.list(opts).map(map).reduce(reduce, []).filter(filter)
+
+    // convert to set then to array to remove any duplicate results
+    return Array.from(new Set(
+      this.list(opts).map(map).reduce(reduce, []).filter(filter)
+    ))
 
     function map(item) {
       if ('function' === typeof item.query) {
@@ -138,27 +142,23 @@ class Pool {
             .replace(/\\\\*/g, '.*')
         }
 
-        if (undefined !== value) {
-          if ('string' === typeof value || value instanceof RegExp) {
-            if (toRegex(value).test(resource[key])) {
-              return true
-            }
-          }
-
-          if (where[key] === resource[key]) {
+        if ('string' === typeof value || value instanceof RegExp) {
+          if (toRegex(value).test(resource[key])) {
             return true
           }
-
-          if ('function' === typeof value) {
-            if (false === value(resource[key], resource)) {
-              return false
-            }
-          }
-
-          return false
         }
 
-        return true
+        if (where[key] === resource[key]) {
+          return true
+        }
+
+        if ('function' === typeof value) {
+          if (true === value(resource[key], resource)) {
+            return true
+          }
+        }
+
+        return false
       }
     }
   }
@@ -168,9 +168,6 @@ class Pool {
    * @param {Function} callback
    */
   ready(callback) {
-    const [ ...resources ] = this.list()
-    const ready = new Batch()
-
     if ('function' !== typeof callback) {
       callback = () => void 0
     }
@@ -178,6 +175,9 @@ class Pool {
     if (this.closed || this.closing) {
       return process.nextTick(callback, new POOL_CLOSED_ERR())
     }
+
+    const [ ...resources ] = this.list()
+    const ready = new Batch()
 
     for (const resource of resources) {
       if ('function' === typeof resource.ready) {
@@ -220,17 +220,19 @@ class Pool {
           allowActive = defaultAllowActive
         }
 
-        if (2 === close.length) {
-          return close.call(resource, allowActive, onclose)
-        } else {
-          return close.call(resource, onclose)
+        if ('boolean' !== typeof allowActive) {
+          allowActive = defaultAllowActive
         }
+
+        if ('function' !== typeof callback) {
+          callback = (err) => void err
+        }
+
+        return close.call(resource, allowActive, onclose)
 
         function onclose(err) {
           resources.delete(resource)
-          if ('function' === typeof callback) {
-            callback(err)
-          }
+          callback(err)
         }
       }
     })
@@ -263,19 +265,18 @@ class Pool {
     }
 
     if (this.opened) {
-      process.nextTick(callback)
-    } else if (!this.closed && !this.closing) {
-      if (!this.opening) {
-        this.opening = true
-        this.guard.ready(() => {
-          this.opening = false
-          this.opened = true
-        })
-      }
-      this.guard.ready(callback)
-    } else if (this.closed || this.closing) {
-      return process.nextTick(callback, new POOL_CLOSED_ERR())
+      return process.nextTick(callback, null)
     }
+
+    if (!this.opening) {
+      this.opening = true
+      this.guard.ready(() => {
+        this.opening = false
+        this.opened = true
+      })
+    }
+
+    this.guard.ready(callback)
   }
 
   /**
@@ -293,17 +294,23 @@ class Pool {
       return process.nextTick(callback, new POOL_CLOSED_ERR())
     }
 
+    this.closing = true
+
     const closing = new Batch()
 
-    if (!this.closing) {
-      this.closing = true
+    process.nextTick(() => {
       for (const resource of this[kResources]) {
         closing.push((next) => resource.close(allowActive, next))
       }
-    }
+    })
 
-    closing.end((err) => {
-      callback(err)
+    process.nextTick(() => {
+      closing.end((err) => {
+        this.closing = false
+        this.closed = true
+
+        process.nextTick(callback, err)
+      })
     })
   }
 }
