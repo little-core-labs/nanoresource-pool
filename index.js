@@ -74,7 +74,7 @@ class Pool {
    * Returns a list of resources, optionally filtering out
    * resources marked as "closed" or "closing".
    * @param {?(Object)} opts
-   * @param {?(Boolean)} [opts.closed = true]
+   * @param {?(Boolean)} [opts.closed = false]
    * @return {Array}
    */
   list(opts) {
