@@ -28,6 +28,69 @@ pool.add(resource)
 // query all 'active' resources with a
 // property called 'filename' with a value that matches '*.js'
 pool.query({ filename: '*.js' })
+
+// close pool and all resources when all resources are inactive
+pool.close(callbackA)
+```
+
+<a name="example"></a>
+## Example
+
+Below is an example pool implementation of opened JavaScript and JSON files.
+
+```js
+const Resource = require('nanoresource')
+const Pool = require('nanoresource-pool')
+const fs = require('fs')
+
+class File extends Resource {
+  constructor(filename) {
+    super()
+    this.fd = 0
+    this.filename = filename
+  }
+
+  _open(callback) {
+    fs.open(this.filename, (err, fd) => {
+      this.fd = fd
+      callback(err)
+    })
+  }
+
+  _close(callback) {
+    fs.close(this.fd, callback)
+  }
+}
+
+// `js`and `json` resources are based on the `File` class
+const js = new Pool(File)
+const json = new Pool(File)
+const files = new Pool()
+
+files.add(js)
+files.add(json)
+
+json.resource('package-lock.json')
+json.resource('package.json')
+
+js.resource('test.js')
+js.resource('index.js')
+js.resource('example.js')
+
+files.ready(() => {
+  // `query()` will search for resources in pool and
+  // in child pools (recursively) using
+  // static values, regular expression, and function
+  // predcates to find something
+  let results = null
+  results = files.query({ filename: '*.js' }))
+  results = files.query({ filename: (filename) => /.*.json/.test(filename) }))
+
+  // will close all resources waiting after waiting for
+  // all resources to be inactive
+  files.close((err) => {
+  })
+})
 ```
 
 <a name="api"></a>

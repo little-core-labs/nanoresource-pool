@@ -19,11 +19,6 @@ class File extends Resource {
   _close(callback) {
     fs.close(this.fd, callback)
   }
-
-  read(offset, length, callback) {
-    const buffer = Buffer.allocUnsafe(length)
-    fs.read(this.fd, offset, 0, length, offset, callback)
-  }
 }
 
 const js = new Pool(File)
