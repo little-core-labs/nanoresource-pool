@@ -203,14 +203,18 @@ class Pool {
     }
 
     this.guard.wait()
-    resources.add(resource)
 
+    resources.add(resource)
     resource.open((err) => {
+      if (err) {
+        resources.delete(resource)
+      }
+
       this.guard.continue()
     })
 
     return Object.assign(resource, {
-      close: (allowActive, callback) => {
+      close(allowActive, callback) {
         if ('function' === typeof allowActive) {
           callback = allowActive
           allowActive = defaultAllowActive
