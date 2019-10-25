@@ -17,7 +17,7 @@ $ npm install nanoresource-pool
 <a name="usage"></a>
 ## Usage
 
-```sh
+```js
 const { Pool } = require('nanoresource-pool')
 
 const pool = new Pool()
