@@ -12,7 +12,7 @@ $ npm install nanoresource-pool
 
 ## Status
 
-> **Testing/Documentation**
+> **Stable**
 
 <a name="usage"></a>
 ## Usage
