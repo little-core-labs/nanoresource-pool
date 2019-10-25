@@ -1,0 +1,33 @@
+{
+  "name": "nanoresource-pool",
+  "version": "0.0.0",
+  "description": "Manage a pool of nanoresource instances",
+  "main": "index.js",
+  "scripts": {
+    "test": "nyc tape test.js"
+  },
+  "keywords": [
+    "nanoresource",
+    "pool"
+  ],
+  "author": "Joseph Werle <joseph.werle@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "batch": "^0.6.1",
+    "nanoguard": "^1.2.1",
+    "nanoresource": "^1.2.0",
+    "to-regex": "^3.0.2"
+  },
+  "devDependencies": {
+    "nyc": "^14.1.1",
+    "tape": "^4.11.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/little-core-labs/nanoresource-pool.git"
+  },
+  "bugs": {
+    "url": "https://github.com/little-core-labs/nanoresource-pool/issues"
+  },
+  "homepage": "https://github.com/little-core-labs/nanoresource-pool#readme"
+}
