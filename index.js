@@ -43,10 +43,11 @@ class Pool {
     this.opening = false
     this.closing = false
     this.Factory = Factory || Resource
+    this.autoOpen = false !== opts.autoOpen
     this[kResources] = new Set()
     this.allowActive = opts.allowActive || false
 
-    if (false !== opts.autoOpen) {
+    if (this.autoOpen) {
       process.nextTick(() => this.open())
     }
   }
@@ -273,7 +274,9 @@ class Pool {
       throw new POOL_CLOSED_ERR()
     }
 
-    return this.add(new this.Factory(...args))
+    return this.add(new this.Factory(...args), {
+      autoOpen: Boolean(this.autoOpen)
+    })
   }
 
   /**
