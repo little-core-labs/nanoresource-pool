@@ -107,6 +107,7 @@ an object like:
 {
   guard: NanoGuard(),
   allowActive: false,
+  autoOpen: true, // if `false` you must call `pool.open()`
 }
 ```
 
@@ -163,6 +164,12 @@ resources marked as "closed" or "closing" where `opts` can be:
 #### `pool.ready(callback)`
 
 Waits for `pool` to be ready and calls `callback()` when it is.
+
+<a name="pool-open"></a>
+#### `pool.open([callback])`
+
+Opens the pool. You only need to call this if `opts.autoOpen` was set to
+`false` in the [`Pool` constructor](#pool).
 
 <a name="pool-close"></a>
 #### `pool.close([allowActive[, callback])`

@@ -310,3 +310,12 @@ test('pool.actives', (t) => {
   t.equal(0, pool.actives)
   t.end()
 })
+
+test('pool.open() - opts.autoOpen = false', (t) => {
+  const pool = new Pool({ autoOpen: false })
+  pool.open((err) => {
+    t.error(err)
+    t.pass('open')
+    t.end()
+  })
+})

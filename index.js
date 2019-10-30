@@ -46,7 +46,9 @@ class Pool {
     this[kResources] = new Set()
     this.allowActive = opts.allowActive || false
 
-    process.nextTick(() => this.open())
+    if (false !== opts.autoOpen) {
+      process.nextTick(() => this.open())
+    }
   }
 
   /**
