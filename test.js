@@ -1,16 +1,19 @@
 const Resource = require('nanoresource')
 const Guard = require('nanoguard')
+const lucas = require('lucas-series')
 const test = require('tape')
 
 const createPool = require('./')
 const { Pool } = require('./')
+
+const fds = [ ...lucas(0, 32) ]
 
 // doesn't actually do anything
 class File extends Resource {
   constructor(filename) {
     super()
     this.filename = filename
-    this.fd = 20 + (Math.random() * 5 + Math.random() * 5 | 0)
+    this.fd = 20 + fds.shift()
   }
 
   _open(callback) {
@@ -105,6 +108,24 @@ test('pool.add(resource) - bad resource', (t) => {
   })
 })
 
+test('pool.add(resource) - bad resource (opts.autoOpen = false)', (t) => {
+  const pool = new Pool()
+  const resource = pool.add(new Resource({
+    open(callback) {
+      callback(new Error())
+    }
+  }), { autoOpen: false })
+
+  pool.ready(() => {
+    t.equal(0, pool.size)
+    t.end()
+  })
+
+  resource.open((err) => {
+    t.ok(err)
+  })
+})
+
 test('pool.add(resource) - after closed', (t) => {
   const pool = new Pool()
   pool.ready(() => {
@@ -112,6 +133,18 @@ test('pool.add(resource) - after closed', (t) => {
       t.throws(() => pool.add(new Resource()))
       t.end()
     })
+  })
+})
+
+test('pool.add(resource, opts) - opts.autoOpen = false', (t) => {
+  const pool = new Pool()
+  const resource = pool.add(new Resource(), { autoOpen: false })
+  resource.open((err) => {
+    t.error(err)
+  })
+
+  pool.ready(() => {
+    t.end()
   })
 })
 

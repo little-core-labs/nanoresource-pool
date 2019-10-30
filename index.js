@@ -195,7 +195,11 @@ class Pool {
    * Adds a resource to the pool.
    * @param {NanoResource} resource
    */
-  add(resource) {
+  add(resource, opts) {
+    if (!opts || 'object' !== typeof opts) {
+      opts = {}
+    }
+
     const { close } = resource
     const resources = this[kResources]
     const defaultAllowActive = Boolean(this.allowActive)
@@ -207,13 +211,32 @@ class Pool {
     this.guard.wait()
 
     resources.add(resource)
-    resource.open((err) => {
-      if (err) {
-        resources.delete(resource)
-      }
 
-      this.guard.continue()
-    })
+    if (false === opts.autoOpen) {
+      const { open } = resource
+      resource.open = (callback) => {
+        return open.call(resource, (err) => {
+          if (err) {
+            resources.delete(resource)
+          }
+
+          this.guard.continue()
+
+          // istanbul ignore next
+          if ('function' === typeof callback) {
+            callback(err)
+          }
+        })
+      }
+    } else {
+      resource.open((err) => {
+        if (err) {
+          resources.delete(resource)
+        }
+
+        this.guard.continue()
+      })
+    }
 
     return Object.assign(resource, {
       close(allowActive, callback) {

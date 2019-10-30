@@ -186,10 +186,11 @@ Query for resources added to the pool. This function will also query any
 added child pools on the instance.
 
 <a name="pool-add"></a>
-#### `pool.add(resource)`
+#### `pool.add(resource[, opts])`
 
 Add a resource to the pool. Will remove from pool when the resource
-successfully closes.
+successfully closes. Set `opts.autoOpen = false` to prevent the added
+resource from automatically opening.
 
 <a name="pool-resource"></a>
 #### `pool.resource(...args)`
